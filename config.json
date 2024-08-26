@@ -1,0 +1,25 @@
+{
+    "keys": ["loan_assign", "loan_fee", "loan_recovery", "package", "recharge", "user"],
+    "months": ["38", "39", "40"],
+    "ingestor.py" : {
+        "paths": {
+            "csv": {
+                "loan_assign": "data/csv/loan_assign_{month}.csv",
+                "loan_fee": "data/csv/loan_fee_{month}.csv",
+                "loan_recovery": "data/csv/loan_recovery_{month}.csv",
+                "package": "data/csv/package_{month}.csv",
+                "recharge": "data/csv/recharge_{month}.csv",
+                "user": "data/csv/user_{month}.csv"
+            },
+            "parquet": {
+                "loan_assign": "data/parquet/loan_assign_{month}.parquet",
+                "loan_fee": "data/parquet/loan_fee_{month}.parquet",
+                "loan_recovery": "data/parquet/loan_recovery_{month}.parquet",
+                "package": "data/parquet/package_{month}.parquet",
+                "recharge": "data/parquet/recharge_{month}.parquet",
+                "user": "data/parquet/user_{month}.parquet"
+            }
+        }
+    }    
+}
+
