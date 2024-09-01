@@ -8,38 +8,6 @@ import seaborn as sns
 from typing import List, Tuple, Optional
 
 
-def count_nulls(
-        df: DataFrame, 
-        col_name: str) -> DataFrame:
-    """
-    Counts the number of null values in a specified column of the given DataFrame.
-
-    Args:
-        df (DataFrame): The input Spark DataFrame.
-        col_name (str): The name of the column in which to count null values.
-
-    Returns:
-        DataFrame: A DataFrame containing a single column with the count of null values, aliased as 'null_count'.
-    """
-    # Compute the count of null values in the specified column
-    return df.filter(col(col_name).isNull()).count()
-
-def custom_to_timestamp(
-        df: DataFrame, 
-        col_name: str,
-        format: str = "yyyyMMdd HH:mm:ss") -> DataFrame:
-    """
-    Converts a column with a string date-time format to a timestamp format in a DataFrame.
-
-    Args:
-        df (DataFrame): The input Spark DataFrame.
-        col_name (str): The name of the column to convert to a timestamp.
-
-    Returns:
-        DataFrame: The DataFrame with the specified column converted to a timestamp.
-    """
-    return df.withColumn(col_name, to_timestamp(col(col_name), format))
-
 def save_fig(
         name: str, 
         output_dir: str, 
@@ -79,12 +47,13 @@ def save_fig(
     # Log the success message
     print(f"Figure saved to: {file_path}")
 
-def plot_column_distribution(
-        col_df, 
+def plot_distribution(
+        df: DataFrame, 
         plot_type: str,
         month: str,
         x: str, 
         y: str = None, 
+        hue: str = None, 
         figsize: tuple = (12, 8), 
         output_dir: str = "output") -> None:
     """
@@ -95,6 +64,7 @@ def plot_column_distribution(
         col_name (str): The name of the column to plot.
         plot_type (str): The type of plot to create ('box', 'hist', 'violin', 'count').
         figsize (tuple, optional): Figure size for the plot. Defaults to (12, 8).
+        hue (str, optional): Variable in `df` to map plot aspects to different colors. Defaults to None.
 
     Returns:
         None
@@ -113,10 +83,10 @@ def plot_column_distribution(
         raise ValueError(f"Unsupported plot type '{plot_type}'. Supported types are: {list(supported_plot_types.keys())}.")
 
     # Convert PySpark DataFrame to Pandas DataFrame if necessary
-    if isinstance(col_df, DataFrame):
-        df = col_df.toPandas()
-    elif isinstance(col_df, pd.DataFrame):
-        df = col_df
+    if isinstance(df, DataFrame):
+        df = df.toPandas()
+    elif isinstance(df, pd.DataFrame):
+        df = df
     else:
         raise TypeError("The provided DataFrame is neither a PySpark DataFrame nor a Pandas DataFrame.")
 
@@ -124,11 +94,13 @@ def plot_column_distribution(
     plt.figure(figsize=figsize)
     plot_func = supported_plot_types[plot_type]
     if y:
-        plot_func(data=df, x=x, y=y)
+        plot_func(data=df, x=x, y=y, hue=hue)
     else:
-        plot_func(data=df, x=x)
+        plot_func(data=df, x=x, hue=hue)
 
     name = f"{plot_type.capitalize()}Plot_of_{x}__month_{month}"
+    if hue:
+        name += "__is_hued"
     plt.xticks(rotation=90)
     save_fig(name=name, output_dir=output_dir)
 
@@ -181,7 +153,7 @@ def plot_aggregated_by_time(
         name = f"SumAggregated_{agg_col}_by_{key}"
         aggregated_df[name] = aggregated_df.index
 
-        plot_column_distribution(col_df=aggregated_df, plot_type="line", month=month, x=name, y=f"sum_{agg_col}_{month}", figsize=figsize)
+        plot_distribution(df=aggregated_df, plot_type="line", month=month, x=name, y=f"sum_{agg_col}_{month}", figsize=figsize)
 
 def categorize(
     df: DataFrame,
