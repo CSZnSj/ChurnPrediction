@@ -1,0 +1,7 @@
+numpy==2.0.1
+pandas==2.2.2
+matplotlib==3.9.2
+seaborn==0.13.2
+scikit-learn==1.5.1
+pyspark==3.5.2
+apache-airflow==2.10.1
